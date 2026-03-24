@@ -5,14 +5,21 @@
 
 // --- Funções de utilidade ---
 
-void limpar_tela(){     // Para limpar tela
-    system("clear");
+void limpar_tela() {
+    #ifdef _WIN32
+        system("cls");  // Comando para Windows
+    #else
+        system("clear");  // Comando para Linux/macOS
+    #endif
 }
 
 
-void limpar_buffer(){   // Para limpar buffer de entrada do teclado
+void limpar_buffer(){
     int c;
-    while((c=getchar()) != EOF && c != '\n');
+    c = getchar();
+    while(c != '\n' && c != EOF){
+        c = getchar();
+    };
 }
 
 
@@ -34,32 +41,32 @@ typedef struct {        // Estrutura para os territorios
 
 // Necessario ser global para as funções poderem acessar
 Territorio cartas[TERRITORIOS]; // tipo identificador [quantidade]
-int carta = 0;
+int indice_territorio = 0;
 
 
 // -- Funções das opções selecionadas --
 int cadastrar(){
     printf("---------  Cadastro de Novo Território  ---------\n");
 
-    if (carta >= TERRITORIOS){
+    if (indice_territorio >= TERRITORIOS){ // Verifica se ainda tem espaço para territorios
         printf("\nNão é possível cadastrar mais territórios. Limite atingido\n");
         return 0;
     }
 
-    // Captura o nome do territorio e salva no array de posiçao carta, depois retira o \n
+    // Captura o nome do territorio e salva no array de posiçao indice_territorio, depois retira o \n
     printf("Digite o nome do territorio: ");
-    fgets(cartas[carta].nome, 30, stdin);
-    cartas[carta].nome[strcspn(cartas[carta].nome, "\n")] = '\0';
+    fgets(cartas[indice_territorio].nome, 30, stdin);
+    cartas[indice_territorio].nome[strcspn(cartas[indice_territorio].nome, "\n")] = '\0';
 
     printf("Digite a cor do exército: ");
-    fgets(cartas[carta].cor, 10, stdin);
-    cartas[carta].cor[strcspn(cartas[carta].cor, "\n")] = '\0';
+    fgets(cartas[indice_territorio].cor, 10, stdin);
+    cartas[indice_territorio].cor[strcspn(cartas[indice_territorio].cor, "\n")] = '\0';
 
     printf("Digite a quantidade de tropas: ");
-    scanf("%d", &cartas[carta].tropas);
+    scanf("%d", &cartas[indice_territorio].tropas);
     limpar_buffer();
 
-    carta++;
+    indice_territorio++;
     printf("\nTerritório cadastrado com sucesso!\n");
     return 1;
 }
@@ -67,7 +74,23 @@ int cadastrar(){
 int listar(){
     printf("------------  Lista de Territórios  ------------\n\n");
 
-    
+    if (indice_territorio == 0){ // Verifica se há territorios para listagem
+        printf("Nenhum território criado!\n");
+        return 0;
+    }
+
+    limpar_tela();
+    for (int i=0; i<indice_territorio; i++){
+        printf("--------------------------------------\n");
+        printf("TERRITÓRIO: %d\n", i+1);
+        printf("--------------------------------------\n");
+        printf("Nome: %s\n", cartas[i].nome);
+        printf("Cor do exército: %s\n", cartas[i].cor);
+        printf("Quantidade de tropas: %d\n\n", cartas[i].tropas);  
+    };
+    printf("--------------------------------------\n");
+
+    return 1;
 };
 
 
@@ -76,6 +99,7 @@ int listar(){
 // --- Função Principal ---
 int main (){
     int opc;
+    char input[1];
     
 
     do{     // loop principal de escolhas
@@ -91,8 +115,9 @@ int main (){
 
 
         // Leitura e seleção da escolha
-        scanf("%d", &opc);
-        limpar_buffer();
+        fgets(input, sizeof(input), stdin);
+        int opc = input[0] - '0';
+
         limpar_tela();
         switch (opc){
             case 1:
@@ -105,7 +130,6 @@ int main (){
 
             case 0:
                 printf("Você escolheu sair do sistema...\n");
-                
                 break;
 
             default:
